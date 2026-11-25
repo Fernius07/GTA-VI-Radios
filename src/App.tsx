@@ -248,7 +248,7 @@ export default function App() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       {GENRE_CATEGORIES.map((genre) => {
                         const active = selectedGenre === genre;
                         return (
