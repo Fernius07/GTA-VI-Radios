@@ -3,6 +3,7 @@ import path from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import JavaScriptObfuscator from 'javascript-obfuscator';
 
 /**
  * Serves local MP3 files from ./local-audio at /audio/<file>.mp3 during dev/preview
@@ -85,8 +86,53 @@ function localAudioPlugin(): Plugin {
   };
 }
 
+/**
+ * Obfuscates built JS chunks in production builds to deter casual inspection in DevTools.
+ */
+function productionObfuscatorPlugin(): Plugin {
+  return {
+    name: 'production-js-obfuscator',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_, bundle) {
+      for (const item of Object.values(bundle)) {
+        if (item.type === 'chunk' && item.fileName.endsWith('.js')) {
+          const result = JavaScriptObfuscator.obfuscate(item.code, {
+            compact: true,
+            identifierNamesGenerator: 'hexadecimal',
+            renameGlobals: false,
+            rotateStringArray: true,
+            shuffleStringArray: true,
+            splitStrings: true,
+            splitStringsChunkLength: 8,
+            stringArray: true,
+            stringArrayEncoding: ['base64'],
+            stringArrayIndexShift: true,
+            stringArrayThreshold: 0.85,
+            unicodeEscapeSequence: false,
+            controlFlowFlattening: false,
+            deadCodeInjection: false,
+            selfDefending: false,
+            debugProtection: false,
+            disableConsoleOutput: true,
+          });
+          item.code = result.getObfuscatedCode();
+        }
+      }
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss(), localAudioPlugin()],
+  plugins: [react(), tailwindcss(), localAudioPlugin(), productionObfuscatorPlugin()],
+  esbuild: {
+    drop: ['console', 'debugger'],
+    legalComments: 'none',
+  },
+  build: {
+    sourcemap: false,
+    minify: 'esbuild',
+  },
   server: {
     port: 5173,
     strictPort: false,
