@@ -10,7 +10,17 @@
     background-color: #09090b;
     color: #fafafa;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
   }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .font-display {

@@ -42,7 +42,7 @@ export function HeroBanner({
 }: HeroBannerProps) {
   return (
     <section
-      className="relative overflow-hidden rounded-2xl p-5 sm:p-8 ring-1 ring-white/[0.08] transition-all duration-700"
+      className="relative overflow-hidden rounded-2xl p-4 md:p-8 ring-1 ring-white/[0.08] transition-all duration-700"
       style={{
         background: `linear-gradient(155deg, ${station.accentColor}44 0%, #16161c 52%, #111115 100%)`,
       }}
@@ -55,18 +55,17 @@ export function HeroBanner({
 
       {/* Returning listener live-continuity notification */}
       {showAwayBanner && awaySeconds >= 5 && (
-        <div className="relative z-10 mb-5 flex items-center justify-between gap-3 rounded-xl bg-black/35 px-4 py-2.5 text-xs sm:text-sm text-zinc-200 ring-1 ring-white/10 backdrop-blur-md">
-          <div className="flex items-center gap-2.5">
+        <div className="relative z-10 mb-3.5 md:mb-5 flex items-center justify-between gap-2.5 rounded-xl bg-black/35 px-3 py-2 md:px-4 md:py-2.5 text-xs sm:text-sm text-zinc-200 ring-1 ring-white/10 backdrop-blur-md">
+          <div className="flex items-center gap-2 min-w-0">
             <Clock className="h-4 w-4 shrink-0 text-[#1ed760]" />
-            <span>
-              Bienvenido de vuelta a Leonida. Mientras estuviste fuera (
-              <strong className="text-white">{formatElapsedAway(awaySeconds)}</strong>), todas las
-              emisoras siguieron emitiendo en directo.
+            <span className="leading-snug">
+              De vuelta en Leonida (<strong className="text-white">{formatElapsedAway(awaySeconds)}</strong> fuera):
+              las emisoras siguieron en directo.
             </span>
           </div>
           <button
             onClick={onDismissAwayBanner}
-            className="rounded-md p-1 text-zinc-400 hover:bg-white/10 hover:text-white"
+            className="shrink-0 rounded-md p-1 text-zinc-400 hover:bg-white/10 hover:text-white"
             aria-label="Cerrar aviso"
           >
             <X className="h-4 w-4" />
@@ -74,17 +73,99 @@ export function HeroBanner({
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-end">
+      {/* Compact Spotify-Mobile "Now Tuned" Card (< md) */}
+      <div className="relative z-10 flex flex-col gap-3.5 md:hidden">
+        <div className="flex items-center gap-3.5">
+          <StationArtwork
+            station={station}
+            size="mobileHero"
+            className="shrink-0 shadow-xl shadow-black/50"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white ring-1 ring-white/10">
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    isPlaying ? 'bg-[#1ed760] animate-pulse' : 'bg-rose-500'
+                  }`}
+                />
+                En directo · {station.frequency}
+              </span>
+            </div>
+            <h1 className="mt-1.5 truncate text-xl font-black tracking-tight text-white">
+              {station.name}
+            </h1>
+            <p className="mt-0.5 line-clamp-1 text-xs font-medium text-zinc-200">
+              {station.tagline}
+            </p>
+          </div>
+        </div>
+
+        <p className="line-clamp-2 text-xs leading-relaxed text-zinc-300/90">
+          {station.description}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          {station.styles.slice(0, 3).map((style) => (
+            <span
+              key={style}
+              className="rounded-md bg-white/[0.08] px-2 py-0.5 text-[11px] font-medium text-zinc-200"
+            >
+              {style}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 pt-0.5">
+          <button
+            onClick={onTogglePlay}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[#1ed760] px-4 py-2.5 text-xs font-bold text-black shadow-lg shadow-[#1ed760]/25 transition active:scale-[0.98] touch-manipulation"
+          >
+            {isBuffering ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isPlaying ? (
+              <Pause className="h-4 w-4 fill-black" />
+            ) : (
+              <Play className="h-4 w-4 fill-black ml-0.5" />
+            )}
+            {isBuffering ? 'Sintonizando...' : isPlaying ? 'Pausar' : 'Sintonizar'}
+          </button>
+
+          <button
+            onClick={onRandomStation}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-white/10 px-4 py-2.5 text-xs font-semibold text-white ring-1 ring-white/10 transition active:scale-[0.98] touch-manipulation"
+          >
+            <Shuffle className="h-3.5 w-3.5" />
+            Aleatoria
+          </button>
+
+          <button
+            onClick={onToggleFavorite}
+            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-1 transition active:scale-95 touch-manipulation ${
+              isFavorite
+                ? 'bg-[#1ed760]/15 text-[#1ed760] ring-[#1ed760]/40'
+                : 'bg-white/[0.07] text-zinc-300 ring-white/10'
+            }`}
+            title={isFavorite ? 'Quitar de favoritas' : 'Añadir a favoritas'}
+            aria-label={isFavorite ? 'Quitar de favoritas' : 'Añadir a favoritas'}
+          >
+            <Heart className={`h-4 w-4 ${isFavorite ? 'fill-[#1ed760]' : ''}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Full Desktop Hero (>= md) */}
+      <div className="relative z-10 hidden md:flex md:flex-row md:items-end md:gap-6">
         {/* Artwork Tile */}
         <StationArtwork
           station={station}
           size="lg"
-          className="mx-auto shrink-0 shadow-2xl shadow-black/60 md:mx-0"
+          className="shrink-0 shadow-2xl shadow-black/60"
         />
 
         {/* Info & Actions */}
-        <div className="flex min-w-0 flex-1 flex-col text-center md:text-left">
-          <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
+        <div className="flex min-w-0 flex-1 flex-col text-left">
+          <div className="flex flex-wrap items-center justify-start gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-black/45 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white ring-1 ring-white/10">
               <span
                 className={`h-2 w-2 rounded-full ${
@@ -105,11 +186,11 @@ export function HeroBanner({
             )}
           </div>
 
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-3 text-4xl font-black tracking-tight text-white lg:text-5xl">
             {station.name}
           </h1>
 
-          <p className="mt-1.5 text-sm font-medium text-zinc-200 sm:text-base">
+          <p className="mt-1.5 text-base font-medium text-zinc-200">
             {station.tagline}
           </p>
 
@@ -118,7 +199,7 @@ export function HeroBanner({
           </p>
 
           {/* Style pills */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 md:justify-start">
+          <div className="mt-4 flex flex-wrap items-center justify-start gap-2">
             {station.styles.map((style) => (
               <span
                 key={style}
@@ -130,7 +211,7 @@ export function HeroBanner({
           </div>
 
           {/* Primary Spotify-style Action Row */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+          <div className="mt-6 flex flex-wrap items-center justify-start gap-3">
             <button
               onClick={onTogglePlay}
               className="inline-flex items-center gap-2.5 rounded-full bg-[#1ed760] px-7 py-3 text-sm font-bold text-black shadow-lg shadow-[#1ed760]/25 transition-all hover:scale-[1.03] hover:bg-[#3be477] active:scale-[0.98]"

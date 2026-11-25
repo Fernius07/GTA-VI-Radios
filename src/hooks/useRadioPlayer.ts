@@ -430,6 +430,36 @@ export function useRadioPlayer(): RadioPlayerController {
     setShowAwayBanner(false);
   }, []);
 
+  // Sync lock-screen / car-stereo MediaSession controls on mobile devices
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    try {
+      const origin = window.location.origin;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentStation.name,
+        artist: `${currentStation.frequency} · ${currentStation.styles.slice(0, 2).join(' · ')}`,
+        album: 'GTA VI Radio — Leonida',
+        artwork: [
+          {
+            src: `${origin}${currentStation.cover}`,
+            sizes: '512x512',
+          },
+        ],
+      });
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (!isPlaying) togglePlay();
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (isPlaying) togglePlay();
+      });
+      navigator.mediaSession.setActionHandler('previoustrack', () => prevStation());
+      navigator.mediaSession.setActionHandler('nexttrack', () => nextStation());
+    } catch {
+      // Ignore unsupported MediaSession environments
+    }
+  }, [currentStation, isPlaying, togglePlay, prevStation, nextStation]);
+
   return {
     session,
     currentStation,

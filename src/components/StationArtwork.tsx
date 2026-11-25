@@ -2,7 +2,7 @@ import type { RadioStation } from '../data/stations';
 
 interface StationArtworkProps {
   station: RadioStation;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'mobileHero' | 'md' | 'lg' | 'xl';
   isPlaying?: boolean;
   className?: string;
 }
@@ -10,7 +10,8 @@ interface StationArtworkProps {
 const SIZE_CLASSES: Record<NonNullable<StationArtworkProps['size']>, string> = {
   xs: 'w-11 h-11 rounded-md p-1.5',
   sm: 'w-14 h-14 rounded-lg p-2',
-  md: 'w-full aspect-square rounded-xl p-5',
+  mobileHero: 'w-20 h-20 rounded-xl p-2.5',
+  md: 'w-full aspect-square rounded-xl p-3.5 sm:p-5',
   lg: 'w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-6',
   xl: 'w-56 h-56 sm:w-64 sm:h-64 rounded-2xl p-7',
 };
