@@ -13,7 +13,7 @@ const SIZE_CLASSES: Record<NonNullable<StationArtworkProps['size']>, string> = {
   mobileHero: 'w-20 h-20 rounded-xl p-2.5',
   md: 'w-full aspect-square rounded-xl p-3.5 sm:p-5',
   lg: 'w-44 h-44 sm:w-52 sm:h-52 rounded-2xl p-6',
-  xl: 'w-56 h-56 sm:w-64 sm:h-64 rounded-2xl p-7',
+  xl: 'w-64 h-64 lg:w-[312px] lg:h-[312px] rounded-2xl p-8',
 };
 
 export function StationArtwork({

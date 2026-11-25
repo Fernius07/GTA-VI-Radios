@@ -156,11 +156,11 @@ export function HeroBanner({
       </div>
 
       {/* Full Desktop Hero (>= md) */}
-      <div className="relative z-10 hidden md:flex md:flex-row md:items-end md:gap-6">
+      <div className="relative z-10 hidden md:flex md:flex-row md:items-center md:gap-8">
         {/* Artwork Tile */}
         <StationArtwork
           station={station}
-          size="lg"
+          size="xl"
           className="shrink-0 shadow-2xl shadow-black/60"
         />
 
@@ -187,11 +187,11 @@ export function HeroBanner({
             )}
           </div>
 
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-white lg:text-5xl">
+          <h1 className="mt-2.5 text-4xl font-black tracking-tight text-white lg:text-5xl">
             {station.name}
           </h1>
 
-          <p className="mt-1.5 text-base font-medium text-zinc-200">
+          <p className="mt-1 text-base font-medium text-zinc-200">
             {station.tagline}
           </p>
 
@@ -201,12 +201,12 @@ export function HeroBanner({
             </p>
           )}
 
-          <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-zinc-300/90">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-300/90">
             {station.description}
           </p>
 
           {currentTrack && (
-            <div className="mt-3.5 inline-flex max-w-xl items-center gap-3 self-start rounded-xl bg-black/35 px-3.5 py-2 ring-1 ring-white/10 backdrop-blur-md">
+            <div className="mt-3 inline-flex max-w-xl items-center gap-3 self-start rounded-xl bg-black/35 px-3.5 py-2 ring-1 ring-white/10 backdrop-blur-md">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1ed760]/15 text-[#1ed760]">
                 <Music2 className="h-4 w-4" />
               </div>
@@ -227,7 +227,7 @@ export function HeroBanner({
           )}
 
           {/* Style pills */}
-          <div className="mt-4 flex flex-wrap items-center justify-start gap-2">
+          <div className="mt-3 flex flex-wrap items-center justify-start gap-2">
             {station.styles.map((style) => (
               <span
                 key={style}
@@ -239,7 +239,7 @@ export function HeroBanner({
           </div>
 
           {/* Primary Spotify-style Action Row */}
-          <div className="mt-6 flex flex-wrap items-center justify-start gap-3">
+          <div className="mt-4 flex flex-wrap items-center justify-start gap-3">
             <button
               onClick={onTogglePlay}
               className="inline-flex items-center gap-2.5 rounded-full bg-[#1ed760] px-7 py-3 text-sm font-bold text-black shadow-lg shadow-[#1ed760]/25 transition-all hover:scale-[1.03] hover:bg-[#3be477] active:scale-[0.98]"
