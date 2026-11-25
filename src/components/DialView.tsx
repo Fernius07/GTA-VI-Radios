@@ -1,3 +1,4 @@
+import { useRef, type CSSProperties, type TouchEvent } from 'react';
 import { ChevronLeft, ChevronRight, Music2, Pause, Play } from 'lucide-react';
 import { STATIONS, type RadioStation } from '../data/stations';
 import type { CurrentTrackInfo } from '../lib/radioEngine';
@@ -24,15 +25,26 @@ export function DialView({
   onNext,
 }: DialViewProps) {
   const activeIdx = STATIONS.findIndex((s) => s.id === currentStation.id);
+  const touchStartXRef = useRef<number | null>(null);
 
-  // Build 5-slot circular carousel centered on activeIdx
-  const slots = [-2, -1, 0, 1, 2].map((offset) => {
-    const idx = (activeIdx + offset + STATIONS.length) % STATIONS.length;
-    return {
-      offset,
-      station: STATIONS[idx],
-    };
-  });
+  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+    touchStartXRef.current = e.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
+    if (touchStartXRef.current === null) return;
+    const endX = e.changedTouches[0]?.clientX ?? touchStartXRef.current;
+    const diff = endX - touchStartXRef.current;
+    touchStartXRef.current = null;
+    if (Math.abs(diff) < 40) return;
+    if (diff < 0) {
+      onNext();
+    } else {
+      onPrev();
+    }
+  };
+
+  const n = STATIONS.length;
 
   return (
     <section
@@ -45,29 +57,79 @@ export function DialView({
       <div className="mb-6 sm:mb-10 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
         <span>DIAL FM · LEONIDA</span>
         <span>
-          {activeIdx + 1} / {STATIONS.length}
+          {activeIdx + 1} / {n}
         </span>
       </div>
 
-      {/* Horizontal 5-Station Wheel inspired by GTA VI Radio */}
-      <div className="flex items-center justify-center gap-3 sm:gap-5">
-        {slots.map(({ offset, station }) => {
-          const isCenter = offset === 0;
-          const isEdge = Math.abs(offset) === 2;
+      {/* Smooth Sliding Horizontal Station Wheel inspired by GTA VI Radio */}
+      <div
+        className="dial-stage relative mx-auto flex h-48 sm:h-56 md:h-60 w-full max-w-[860px] items-center justify-center overflow-hidden select-none touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {STATIONS.map((station, idx) => {
+          let delta = idx - activeIdx;
+          if (delta > n / 2) delta -= n;
+          if (delta < -n / 2) delta += n;
+
+          const absDelta = Math.abs(delta);
+          const isCenter = delta === 0;
+          const isVisible = absDelta <= 3;
+
+          let translateX = '0px';
+          let scale = 1;
+          let zIndex = 1;
+          let opacityClass = 'opacity-0 pointer-events-none';
+
+          if (delta === 0) {
+            translateX = '0px';
+            scale = 1;
+            zIndex = 30;
+            opacityClass = 'opacity-100 cursor-pointer';
+          } else if (absDelta === 1) {
+            translateX = delta > 0 ? 'var(--dial-x1)' : 'calc(-1 * var(--dial-x1))';
+            scale = 0.72;
+            zIndex = 20;
+            opacityClass = 'opacity-70 hover:opacity-95 cursor-pointer';
+          } else if (absDelta === 2) {
+            translateX = delta > 0 ? 'var(--dial-x2)' : 'calc(-1 * var(--dial-x2))';
+            scale = 0.56;
+            zIndex = 10;
+            opacityClass = 'opacity-0 md:opacity-45 md:hover:opacity-75 pointer-events-none md:pointer-events-auto cursor-pointer';
+          } else if (absDelta === 3) {
+            translateX = delta > 0 ? 'var(--dial-x3)' : 'calc(-1 * var(--dial-x3))';
+            scale = 0.45;
+            zIndex = 5;
+            opacityClass = 'opacity-0 pointer-events-none';
+          } else {
+            // Keep off-stage items anchored off-screen on the side they belong to without flying across
+            translateX = delta > 0 ? 'var(--dial-x3)' : 'calc(-1 * var(--dial-x3))';
+            scale = 0.45;
+            zIndex = 1;
+            opacityClass = 'opacity-0 pointer-events-none';
+          }
+
+          const itemStyle: CSSProperties = {
+            transform: `translate3d(${translateX}, 0, 0) scale(${scale})`,
+            zIndex,
+            transition: isVisible
+              ? 'transform 380ms cubic-bezier(0.22, 1, 0.36, 1), opacity 340ms ease'
+              : 'none',
+            willChange: isVisible ? 'transform, opacity' : 'auto',
+          };
+
           return (
             <button
-              key={`${station.id}-${offset}`}
+              key={station.id}
               onClick={() => (isCenter ? onTogglePlay() : onSelectStation(station.id))}
-              className={`group relative transition-all duration-300 focus:outline-none ${
-                isCenter
-                  ? 'z-20 w-40 sm:w-52 scale-100 opacity-100'
-                  : isEdge
-                    ? 'hidden md:block w-28 sm:w-32 scale-90 opacity-45 hover:opacity-75'
-                    : 'w-24 sm:w-36 scale-95 opacity-65 hover:opacity-90'
-              }`}
+              style={itemStyle}
+              tabIndex={absDelta <= 2 ? 0 : -1}
+              aria-hidden={absDelta > 2}
+              aria-label={station.name}
+              className={`group absolute w-40 sm:w-48 md:w-52 focus:outline-none ${opacityClass}`}
             >
               <div
-                className={`rounded-2xl p-1 transition-all ${
+                className={`rounded-2xl p-1 transition-all duration-300 ${
                   isCenter
                     ? 'ring-2 ring-white shadow-2xl shadow-black/70'
                     : 'ring-1 ring-white/10'
@@ -105,7 +167,7 @@ export function DialView({
           <div
             className="h-full rounded-full bg-white transition-all duration-300"
             style={{
-              width: `${((activeIdx + 1) / STATIONS.length) * 100}%`,
+              width: `${((activeIdx + 1) / n) * 100}%`,
             }}
           />
         </div>

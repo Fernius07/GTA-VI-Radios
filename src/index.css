@@ -145,3 +145,26 @@ input[type='range'].spotify-slider:hover::-webkit-slider-thumb {
     animation: none;
   }
 }
+
+/* Responsive horizontal slot offsets for the sliding GTA Dial wheel */
+.dial-stage {
+  --dial-x1: 148px;
+  --dial-x2: 265px;
+  --dial-x3: 360px;
+}
+
+@media (min-width: 640px) {
+  .dial-stage {
+    --dial-x1: 176px;
+    --dial-x2: 315px;
+    --dial-x3: 430px;
+  }
+}
+
+@media (min-width: 768px) {
+  .dial-stage {
+    --dial-x1: 198px;
+    --dial-x2: 350px;
+    --dial-x3: 475px;
+  }
+}
