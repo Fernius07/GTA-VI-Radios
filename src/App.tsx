@@ -201,7 +201,6 @@ export default function App() {
                 <DialView
                   currentStation={player.currentStation}
                   isPlaying={player.isPlaying}
-                  livePosition={player.livePosition}
                   onSelectStation={(id) => player.selectStation(id, true)}
                   onTogglePlay={player.togglePlay}
                   onPrev={player.prevStation}
@@ -218,8 +217,6 @@ export default function App() {
                       isFavorite={player.session.favorites.includes(
                         player.currentStation.id
                       )}
-                      livePosition={player.livePosition}
-                      effectiveDuration={player.effectiveDuration}
                       showAwayBanner={player.showAwayBanner}
                       awaySeconds={player.awaySeconds}
                       isFirstVisit={player.isFirstVisit}
@@ -313,8 +310,6 @@ export default function App() {
         isPlaying={player.isPlaying}
         isBuffering={player.isBuffering}
         isFavorite={player.session.favorites.includes(player.currentStation.id)}
-        livePosition={player.livePosition}
-        effectiveDuration={player.effectiveDuration}
         volume={player.session.volume}
         isMuted={player.isMuted}
         fmStaticEnabled={player.session.fmStaticEnabled}

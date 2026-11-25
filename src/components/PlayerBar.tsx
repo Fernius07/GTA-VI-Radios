@@ -12,7 +12,6 @@ import {
   VolumeX,
 } from 'lucide-react';
 import type { RadioStation } from '../data/stations';
-import { formatBroadcastTime } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
 
 interface PlayerBarProps {
@@ -20,8 +19,6 @@ interface PlayerBarProps {
   isPlaying: boolean;
   isBuffering: boolean;
   isFavorite: boolean;
-  livePosition: number;
-  effectiveDuration: number;
   volume: number;
   isMuted: boolean;
   fmStaticEnabled: boolean;
@@ -40,8 +37,6 @@ export function PlayerBar({
   isPlaying,
   isBuffering,
   isFavorite,
-  livePosition,
-  effectiveDuration,
   volume,
   isMuted,
   fmStaticEnabled,
@@ -54,9 +49,6 @@ export function PlayerBar({
   onToggleMute,
   onToggleFmStatic,
 }: PlayerBarProps) {
-  const progressPct =
-    effectiveDuration > 0 ? Math.min(100, (livePosition / effectiveDuration) * 100) : 0;
-
   const displayVol = isMuted ? 0 : volume;
   const VolumeIcon =
     displayVol === 0 ? VolumeX : displayVol < 0.5 ? Volume1 : Volume2;
@@ -160,22 +152,27 @@ export function PlayerBar({
             </button>
           </div>
 
-          {/* Live Broadcast Progress (read-only real-time sync bar) */}
-          <div className="flex w-full max-w-lg items-center gap-2.5 text-[11px] font-mono text-zinc-400">
-            <span className="w-14 text-right tabular-nums text-zinc-300">
-              {formatBroadcastTime(livePosition)}
+          {/* Live Broadcast Signal Status (clean live FM bar without duration/timestamps) */}
+          <div className="flex w-full max-w-md items-center gap-2.5 text-[11px] font-medium text-zinc-400">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  isPlaying ? 'bg-[#1ed760] animate-pulse' : 'bg-zinc-500'
+                }`}
+              />
+              {isPlaying ? 'En directo' : 'En pausa'}
             </span>
-            <div
-              className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/15"
-              title="Emisión continua en directo sincronizada con tu sesión"
-            >
+            <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[#1ed760] to-[#4ade80] transition-[width] duration-500"
-                style={{ width: `${progressPct}%` }}
+                className={`h-full w-full rounded-full transition-opacity duration-300 ${
+                  isPlaying
+                    ? 'bg-gradient-to-r from-[#1ed760]/40 via-[#1ed760] to-[#1ed760]/40 opacity-100'
+                    : 'bg-white/25 opacity-40'
+                }`}
               />
             </div>
-            <span className="w-14 tabular-nums">
-              {formatBroadcastTime(effectiveDuration)}
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+              {station.frequency}
             </span>
           </div>
         </div>

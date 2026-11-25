@@ -1,12 +1,10 @@
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { STATIONS, type RadioStation } from '../data/stations';
-import { formatBroadcastTime } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
 
 interface DialViewProps {
   currentStation: RadioStation;
   isPlaying: boolean;
-  livePosition: number;
   onSelectStation: (stationId: string) => void;
   onTogglePlay: () => void;
   onPrev: () => void;
@@ -16,7 +14,6 @@ interface DialViewProps {
 export function DialView({
   currentStation,
   isPlaying,
-  livePosition,
   onSelectStation,
   onTogglePlay,
   onPrev,
@@ -126,7 +123,7 @@ export function DialView({
               isPlaying ? 'bg-[#1ed760] animate-pulse' : 'bg-rose-500'
             }`}
           />
-          {currentStation.frequency} · En directo {formatBroadcastTime(livePosition)}
+          {currentStation.frequency} · En directo
         </div>
         <h2 className="mt-3 font-display text-3xl font-bold uppercase tracking-wide text-white sm:text-4xl">
           {currentStation.name}

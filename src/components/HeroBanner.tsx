@@ -10,11 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import type { RadioStation } from '../data/stations';
-import {
-  formatBroadcastTime,
-  formatDurationHuman,
-  formatElapsedAway,
-} from '../lib/radioEngine';
+import { formatElapsedAway } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
 
 interface HeroBannerProps {
@@ -22,8 +18,6 @@ interface HeroBannerProps {
   isPlaying: boolean;
   isBuffering: boolean;
   isFavorite: boolean;
-  livePosition: number;
-  effectiveDuration: number;
   showAwayBanner: boolean;
   awaySeconds: number;
   isFirstVisit: boolean;
@@ -38,8 +32,6 @@ export function HeroBanner({
   isPlaying,
   isBuffering,
   isFavorite,
-  livePosition,
-  effectiveDuration,
   showAwayBanner,
   awaySeconds,
   isFirstVisit,
@@ -125,7 +117,7 @@ export function HeroBanner({
             {station.description}
           </p>
 
-          {/* Style pills + metadata */}
+          {/* Style pills */}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 md:justify-start">
             {station.styles.map((style) => (
               <span
@@ -135,13 +127,6 @@ export function HeroBanner({
                 {style}
               </span>
             ))}
-            <span className="text-xs text-zinc-400 md:ml-2">
-              {station.songCount ? `${station.songCount} canciones · ` : ''}
-              Emisión {formatDurationHuman(effectiveDuration)} · Punto actual{' '}
-              <span className="font-mono text-zinc-200">
-                {formatBroadcastTime(livePosition)}
-              </span>
-            </span>
           </div>
 
           {/* Primary Spotify-style Action Row */}

@@ -1,6 +1,5 @@
 import { Heart, Pause, Play } from 'lucide-react';
 import type { RadioStation } from '../data/stations';
-import { formatDurationHuman } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
 
 interface StationCardProps {
@@ -109,10 +108,9 @@ export function StationCard({
         {station.description}
       </p>
 
-      {/* Footer duration */}
-      <div className="mt-auto pt-3 flex items-center justify-between text-[11px] text-zinc-500">
+      {/* Footer category */}
+      <div className="mt-auto pt-3 flex items-center text-[11px] text-zinc-500">
         <span>{station.category}</span>
-        <span>{formatDurationHuman(station.durationSeconds)}</span>
       </div>
     </div>
   );
