@@ -2,6 +2,7 @@ import { useRef, type CSSProperties, type TouchEvent } from 'react';
 import { ChevronLeft, ChevronRight, Music2, Pause, Play } from 'lucide-react';
 import { STATIONS, type RadioStation } from '../data/stations';
 import type { CurrentTrackInfo } from '../lib/radioEngine';
+import { UI_TEXT, type Language } from '../lib/i18n';
 import { StationArtwork } from './StationArtwork';
 import { MarqueeText } from './MarqueeText';
 
@@ -9,6 +10,7 @@ interface DialViewProps {
   currentStation: RadioStation;
   currentTrack: CurrentTrackInfo | null;
   isPlaying: boolean;
+  lang: Language;
   onSelectStation: (stationId: string) => void;
   onTogglePlay: () => void;
   onPrev: () => void;
@@ -19,25 +21,32 @@ export function DialView({
   currentStation,
   currentTrack,
   isPlaying,
+  lang,
   onSelectStation,
   onTogglePlay,
   onPrev,
   onNext,
 }: DialViewProps) {
+  const t = UI_TEXT[lang].dial;
   const activeIdx = STATIONS.findIndex((s) => s.id === currentStation.id);
-  const touchStartXRef = useRef<number | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
-    touchStartXRef.current = e.touches[0]?.clientX ?? null;
+  const handleTouchStart = (e: TouchEvent<HTMLElement>) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
   };
 
-  const handleTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
-    if (touchStartXRef.current === null) return;
-    const endX = e.changedTouches[0]?.clientX ?? touchStartXRef.current;
-    const diff = endX - touchStartXRef.current;
-    touchStartXRef.current = null;
-    if (Math.abs(diff) < 40) return;
-    if (diff < 0) {
+  const handleTouchEnd = (e: TouchEvent<HTMLElement>) => {
+    if (!touchStartRef.current) return;
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    const dx = touch.clientX - touchStartRef.current.x;
+    const dy = touch.clientY - touchStartRef.current.y;
+    touchStartRef.current = null;
+
+    if (Math.abs(dx) < 32 || Math.abs(dx) <= Math.abs(dy)) return;
+    if (dx < 0) {
       onNext();
     } else {
       onPrev();
@@ -48,25 +57,23 @@ export function DialView({
 
   return (
     <section
-      className="relative overflow-hidden rounded-2xl px-3 py-6 sm:px-8 sm:py-14 ring-1 ring-white/10 transition-all duration-700"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="relative overflow-hidden rounded-2xl px-3 py-6 sm:px-8 sm:py-14 ring-1 ring-white/10 transition-all duration-700 touch-pan-y select-none"
       style={{
         background: `radial-gradient(circle at 50% 35%, ${currentStation.accentColor}40 0%, #121218 55%, #0a0a0d 100%)`,
       }}
     >
       {/* Top Leonida Header Strip */}
       <div className="mb-6 sm:mb-10 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-        <span>DIAL FM · LEONIDA</span>
+        <span>{t.header}</span>
         <span>
           {activeIdx + 1} / {n}
         </span>
       </div>
 
       {/* Smooth Sliding Horizontal Station Wheel inspired by GTA VI Radio */}
-      <div
-        className="dial-stage relative mx-auto flex h-48 sm:h-56 md:h-60 w-full max-w-[860px] items-center justify-center overflow-hidden select-none touch-pan-y"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      <div className="dial-stage relative mx-auto flex h-48 sm:h-56 md:h-60 w-full max-w-[860px] items-center justify-center overflow-hidden">
         {STATIONS.map((station, idx) => {
           let delta = idx - activeIdx;
           if (delta > n / 2) delta -= n;
@@ -102,7 +109,6 @@ export function DialView({
             zIndex = 5;
             opacityClass = 'opacity-0 pointer-events-none';
           } else {
-            // Keep off-stage items anchored off-screen on the side they belong to without flying across
             translateX = delta > 0 ? 'var(--dial-x3)' : 'calc(-1 * var(--dial-x3))';
             scale = 0.45;
             zIndex = 1;
@@ -153,17 +159,18 @@ export function DialView({
         })}
       </div>
 
-      {/* L1 / R1 Style Dial Controls */}
-      <div className="mt-6 sm:mt-8 flex items-center justify-center gap-3 sm:gap-4">
+      {/* Arrow-only Dial Controls */}
+      <div className="mt-6 sm:mt-8 flex items-center justify-center gap-4">
         <button
           onClick={onPrev}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 sm:px-3.5 text-xs font-bold uppercase tracking-wider text-white ring-1 ring-white/15 transition hover:bg-white/20 touch-manipulation"
+          aria-label={t.prevStation}
+          title={t.prevStation}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20 active:scale-95 touch-manipulation"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Anterior
+          <ChevronLeft className="h-5 w-5" />
         </button>
 
-        <div className="h-1.5 w-24 sm:w-44 overflow-hidden rounded-full bg-white/15">
+        <div className="h-1.5 w-28 sm:w-44 overflow-hidden rounded-full bg-white/15">
           <div
             className="h-full rounded-full bg-white transition-all duration-300"
             style={{
@@ -174,10 +181,11 @@ export function DialView({
 
         <button
           onClick={onNext}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 sm:px-3.5 text-xs font-bold uppercase tracking-wider text-white ring-1 ring-white/15 transition hover:bg-white/20 touch-manipulation"
+          aria-label={t.nextStation}
+          title={t.nextStation}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20 active:scale-95 touch-manipulation"
         >
-          Siguiente
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-5 w-5" />
         </button>
       </div>
 
@@ -189,7 +197,7 @@ export function DialView({
               isPlaying ? 'bg-[#1ed760] animate-pulse' : 'bg-rose-500'
             }`}
           />
-          {currentStation.frequency} · En directo
+          {currentStation.frequency} · {t.live}
         </div>
         <h2 className="mt-2.5 sm:mt-3 font-display text-2xl sm:text-4xl font-bold uppercase tracking-wide text-white">
           {currentStation.name}
@@ -199,7 +207,7 @@ export function DialView({
         </p>
         {currentStation.hosts && (
           <p className="mt-1 text-xs font-medium text-zinc-400">
-            Con {currentStation.hosts}
+            {t.hostedBy} {currentStation.hosts}
           </p>
         )}
         <p className="mt-2 sm:mt-3 line-clamp-3 sm:line-clamp-none text-xs sm:text-sm leading-relaxed text-zinc-400">
@@ -229,12 +237,12 @@ export function DialView({
           {isPlaying ? (
             <>
               <Pause className="h-4 w-4 fill-black" />
-              Pausar señal
+              {t.pauseSignal}
             </>
           ) : (
             <>
               <Play className="h-4 w-4 fill-black ml-0.5" />
-              Sintonizar emisora
+              {t.tuneStation}
             </>
           )}
         </button>

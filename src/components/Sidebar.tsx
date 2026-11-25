@@ -1,11 +1,14 @@
 import { Disc3, Heart, Home, X } from 'lucide-react';
 import { STATIONS, type RadioStation } from '../data/stations';
+import { localizeStation } from '../data/stationsEn';
+import { UI_TEXT, type Language } from '../lib/i18n';
 import { StationArtwork } from './StationArtwork';
 
 export type SidebarTab = 'home' | 'favorites' | 'dial';
 
 interface SidebarProps {
   activeTab: SidebarTab;
+  lang: Language;
   onChangeTab: (tab: SidebarTab) => void;
   currentStation: RadioStation;
   isPlaying: boolean;
@@ -17,6 +20,7 @@ interface SidebarProps {
 
 export function Sidebar({
   activeTab,
+  lang,
   onChangeTab,
   currentStation,
   isPlaying,
@@ -25,10 +29,12 @@ export function Sidebar({
   mobileOpen,
   onCloseMobile,
 }: SidebarProps) {
+  const t = UI_TEXT[lang].nav;
+
   const navItems: { id: SidebarTab; label: string; icon: typeof Home; badge?: number }[] = [
-    { id: 'home', label: 'Inicio', icon: Home },
-    { id: 'dial', label: 'Modo Dial GTA', icon: Disc3 },
-    { id: 'favorites', label: 'Tus Favoritas', icon: Heart, badge: favorites.length },
+    { id: 'home', label: t.home, icon: Home },
+    { id: 'dial', label: t.dial, icon: Disc3 },
+    { id: 'favorites', label: t.favorites, icon: Heart, badge: favorites.length },
   ];
 
   const content = (
@@ -55,7 +61,7 @@ export function Sidebar({
           <button
             onClick={onCloseMobile}
             className="rounded-lg p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white lg:hidden"
-            aria-label="Cerrar menú"
+            aria-label={t.closeMenu}
           >
             <X className="h-5 w-5" />
           </button>
@@ -97,7 +103,7 @@ export function Sidebar({
       <div className="flex min-h-0 flex-1 flex-col rounded-xl bg-[#121216] ring-1 ring-white/[0.06]">
         <div className="flex items-center justify-between px-4 pt-4 pb-2.5">
           <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-            Emisoras FM / AM
+            {t.stationsTitle}
           </span>
           <span className="rounded-full bg-white/[0.07] px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
             {STATIONS.length}
@@ -105,7 +111,8 @@ export function Sidebar({
         </div>
 
         <div className="flex-1 overflow-y-auto px-2 pb-3 space-y-0.5">
-          {STATIONS.map((station) => {
+          {STATIONS.map((rawStation) => {
+            const station = localizeStation(rawStation, lang);
             const isActive = station.id === currentStation.id;
             const isFav = favorites.includes(station.id);
             return (

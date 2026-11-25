@@ -1,5 +1,6 @@
 import { Heart, Pause, Play } from 'lucide-react';
 import type { RadioStation } from '../data/stations';
+import { GENRE_LABELS, UI_TEXT, type Language } from '../lib/i18n';
 import { StationArtwork } from './StationArtwork';
 
 interface StationCardProps {
@@ -7,6 +8,7 @@ interface StationCardProps {
   isActive: boolean;
   isPlaying: boolean;
   isFavorite: boolean;
+  lang: Language;
   onSelect: () => void;
   onToggleFavorite: () => void;
 }
@@ -16,9 +18,13 @@ export function StationCard({
   isActive,
   isPlaying,
   isFavorite,
+  lang,
   onSelect,
   onToggleFavorite,
 }: StationCardProps) {
+  const t = UI_TEXT[lang];
+  const genreLabel = GENRE_LABELS[lang][station.category];
+
   return (
     <div
       onClick={onSelect}
@@ -48,7 +54,7 @@ export function StationCard({
                 isPlaying ? 'bg-[#1ed760] animate-pulse' : 'bg-zinc-400'
               }`}
             />
-            {isPlaying ? 'Sonando' : 'Sintonizada'}
+            {isPlaying ? t.grid.playingBadge : t.grid.tunedBadge}
           </span>
         )}
 
@@ -63,7 +69,7 @@ export function StationCard({
               ? 'flex opacity-100 text-[#1ed760]'
               : 'hidden sm:flex opacity-0 group-hover:opacity-100 text-white/80 hover:text-white'
           }`}
-          aria-label={isFavorite ? 'Quitar de favoritas' : 'Guardar en favoritas'}
+          aria-label={isFavorite ? t.hero.removeFavorite : t.grid.saveFavorite}
         >
           <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isFavorite ? 'fill-[#1ed760]' : ''}`} />
         </button>
@@ -110,7 +116,7 @@ export function StationCard({
 
       {/* Footer category (desktop/tablet) */}
       <div className="hidden sm:flex mt-auto pt-3 items-center text-[11px] text-zinc-500">
-        <span>{station.category}</span>
+        <span>{genreLabel}</span>
       </div>
     </div>
   );

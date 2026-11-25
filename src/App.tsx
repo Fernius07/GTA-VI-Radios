@@ -14,6 +14,14 @@ import {
   STATIONS,
   type GenreCategory,
 } from './data/stations';
+import { localizeStation } from './data/stationsEn';
+import {
+  GENRE_LABELS,
+  loadInitialLanguage,
+  saveLanguage,
+  UI_TEXT,
+  type Language,
+} from './lib/i18n';
 import { useRadioPlayer } from './hooks/useRadioPlayer';
 import { Sidebar, type SidebarTab } from './components/Sidebar';
 import { HeroBanner } from './components/HeroBanner';
@@ -23,12 +31,24 @@ import { PlayerBar } from './components/PlayerBar';
 import { MobileNav } from './components/MobileNav';
 
 export default function App() {
-  const player = useRadioPlayer();
+  const [lang, setLang] = useState<Language>(() => loadInitialLanguage());
+  const player = useRadioPlayer(lang);
   const [activeTab, setActiveTab] = useState<SidebarTab>('home');
   const [selectedGenre, setSelectedGenre] = useState<GenreCategory>('Todas');
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  const t = UI_TEXT[lang];
+
+  useEffect(() => {
+    saveLanguage(lang);
+  }, [lang]);
+
+  const currentStation = useMemo(
+    () => localizeStation(player.currentStation, lang),
+    [player.currentStation, lang]
+  );
 
   // Global keyboard shortcuts (Space, Left/Right arrows, M, R)
   useEffect(() => {
@@ -65,25 +85,33 @@ export default function App() {
 
   const filteredStations = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return STATIONS.filter((station) => {
-      if (activeTab === 'favorites' && !player.session.favorites.includes(station.id)) {
-        return false;
-      }
-      if (selectedGenre !== 'Todas' && station.category !== selectedGenre) {
-        return false;
-      }
-      if (!q) return true;
-      return (
-        station.name.toLowerCase().includes(q) ||
-        station.description.toLowerCase().includes(q) ||
-        station.tagline.toLowerCase().includes(q) ||
-        (station.hosts?.toLowerCase().includes(q) ?? false) ||
-        station.category.toLowerCase().includes(q) ||
-        station.frequency.toLowerCase().includes(q) ||
-        station.styles.some((s) => s.toLowerCase().includes(q))
-      );
-    });
-  }, [activeTab, selectedGenre, searchQuery, player.session.favorites]);
+    return STATIONS.map((base) => ({
+      base,
+      localized: localizeStation(base, lang),
+    }))
+      .filter(({ base, localized }) => {
+        if (activeTab === 'favorites' && !player.session.favorites.includes(base.id)) {
+          return false;
+        }
+        if (selectedGenre !== 'Todas' && base.category !== selectedGenre) {
+          return false;
+        }
+        if (!q) return true;
+        const genreDisplay = GENRE_LABELS[lang][base.category].toLowerCase();
+        return (
+          localized.name.toLowerCase().includes(q) ||
+          localized.description.toLowerCase().includes(q) ||
+          localized.tagline.toLowerCase().includes(q) ||
+          (localized.hosts?.toLowerCase().includes(q) ?? false) ||
+          genreDisplay.includes(q) ||
+          base.category.toLowerCase().includes(q) ||
+          base.frequency.toLowerCase().includes(q) ||
+          localized.styles.some((s) => s.toLowerCase().includes(q)) ||
+          base.styles.some((s) => s.toLowerCase().includes(q))
+        );
+      })
+      .map(({ localized }) => localized);
+  }, [activeTab, selectedGenre, searchQuery, player.session.favorites, lang]);
 
   const handleCardSelect = (stationId: string) => {
     if (stationId === player.currentStation.id) {
@@ -98,14 +126,46 @@ export default function App() {
     if (tab === 'home') setSelectedGenre('Todas');
   };
 
+  const languageSwitcher = (
+    <div
+      className="inline-flex rounded-full bg-white/[0.06] p-0.5 ring-1 ring-white/[0.08]"
+      role="group"
+      aria-label={t.header.languageSwitch}
+    >
+      <button
+        onClick={() => setLang('es')}
+        className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide transition touch-manipulation ${
+          lang === 'es'
+            ? 'bg-white text-black shadow-xs'
+            : 'text-zinc-300 hover:text-white'
+        }`}
+        aria-pressed={lang === 'es'}
+      >
+        ES
+      </button>
+      <button
+        onClick={() => setLang('en')}
+        className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide transition touch-manipulation ${
+          lang === 'en'
+            ? 'bg-white text-black shadow-xs'
+            : 'text-zinc-300 hover:text-white'
+        }`}
+        aria-pressed={lang === 'en'}
+      >
+        EN
+      </button>
+    </div>
+  );
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-[#09090b] text-white">
       {/* Upper Shell: Sidebar + Main Scrollable View */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <Sidebar
           activeTab={activeTab}
+          lang={lang}
           onChangeTab={handleTabChange}
-          currentStation={player.currentStation}
+          currentStation={currentStation}
           isPlaying={player.isPlaying}
           favorites={player.session.favorites}
           onSelectStation={(id) => player.selectStation(id, true)}
@@ -133,6 +193,8 @@ export default function App() {
                 </div>
 
                 <div className="flex items-center gap-1.5">
+                  {languageSwitcher}
+
                   <button
                     onClick={() => {
                       setMobileSearchOpen((prev) => {
@@ -145,7 +207,7 @@ export default function App() {
                         ? 'bg-white text-black'
                         : 'bg-white/[0.07] text-zinc-200 active:bg-white/15'
                     }`}
-                    aria-label={mobileSearchOpen ? 'Cerrar búsqueda' : 'Buscar emisora'}
+                    aria-label={mobileSearchOpen ? t.header.searchClose : t.header.searchOpen}
                   >
                     {mobileSearchOpen ? (
                       <X className="h-4 w-4" />
@@ -157,8 +219,8 @@ export default function App() {
                   <button
                     onClick={player.resetSessionRandomly}
                     className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.07] text-zinc-200 transition active:bg-white/15 touch-manipulation"
-                    title="Nueva sesión aleatoria"
-                    aria-label="Nueva sesión aleatoria"
+                    title={t.header.newSessionTitle}
+                    aria-label={t.header.newSessionAria}
                   >
                     <RotateCcw className="h-4 w-4" />
                   </button>
@@ -177,14 +239,14 @@ export default function App() {
                       setSearchQuery(e.target.value);
                       if (activeTab === 'dial') setActiveTab('home');
                     }}
-                    placeholder="Buscar emisora, género, estilo..."
+                    placeholder={t.header.searchPlaceholder}
                     className="w-full rounded-full bg-white/[0.09] py-2 pr-9 pl-10 text-sm text-white placeholder-zinc-400 outline-none ring-1 ring-white/15 focus:ring-white/30"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
                       className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-white"
-                      aria-label="Limpiar búsqueda"
+                      aria-label={t.header.clearSearch}
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -198,7 +260,7 @@ export default function App() {
                   <button
                     onClick={() => setMobileMenuOpen(true)}
                     className="rounded-lg p-2 text-zinc-300 hover:bg-white/10 hover:text-white lg:hidden"
-                    aria-label="Abrir emisoras"
+                    aria-label={t.nav.openStations}
                   >
                     <Menu className="h-5 w-5" />
                   </button>
@@ -213,14 +275,14 @@ export default function App() {
                         setSearchQuery(e.target.value);
                         if (activeTab === 'dial') setActiveTab('home');
                       }}
-                      placeholder="Buscar emisora, género, estilo..."
+                      placeholder={t.header.searchPlaceholder}
                       className="w-full rounded-full bg-white/[0.07] py-2 pr-9 pl-10 text-sm text-white placeholder-zinc-400 outline-none ring-1 ring-transparent transition focus:bg-white/[0.11] focus:ring-white/20"
                     />
                     {searchQuery && (
                       <button
                         onClick={() => setSearchQuery('')}
                         className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-white"
-                        aria-label="Limpiar búsqueda"
+                        aria-label={t.header.clearSearch}
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -230,6 +292,9 @@ export default function App() {
 
                 {/* Right Header Actions */}
                 <div className="flex items-center gap-2">
+                  {/* ES / EN Language Toggle right beside Explorar */}
+                  {languageSwitcher}
+
                   {/* Quick View Switcher (Spotify Grid vs GTA Dial) */}
                   <div className="inline-flex rounded-full bg-white/[0.06] p-1 ring-1 ring-white/[0.06]">
                     <button
@@ -241,7 +306,7 @@ export default function App() {
                       }`}
                     >
                       <LayoutGrid className="h-3.5 w-3.5" />
-                      <span>Explorar</span>
+                      <span>{t.nav.explore}</span>
                     </button>
                     <button
                       onClick={() => setActiveTab('dial')}
@@ -252,7 +317,7 @@ export default function App() {
                       }`}
                     >
                       <Disc3 className="h-3.5 w-3.5" />
-                      <span>Dial GTA</span>
+                      <span>{t.nav.dialShort}</span>
                     </button>
                   </div>
 
@@ -260,10 +325,10 @@ export default function App() {
                   <button
                     onClick={player.resetSessionRandomly}
                     className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-zinc-300 ring-1 ring-white/[0.08] transition hover:bg-white/[0.12] hover:text-white"
-                    title="Reiniciar sesión con nueva emisora y horarios aleatorios"
+                    title={t.header.newSessionTitle}
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
-                    <span>Nueva sesión</span>
+                    <span>{t.header.newSession}</span>
                   </button>
                 </div>
               </div>
@@ -281,9 +346,10 @@ export default function App() {
 
               {activeTab === 'dial' ? (
                 <DialView
-                  currentStation={player.currentStation}
+                  currentStation={currentStation}
                   currentTrack={player.currentTrack}
                   isPlaying={player.isPlaying}
+                  lang={lang}
                   onSelectStation={(id) => player.selectStation(id, true)}
                   onTogglePlay={player.togglePlay}
                   onPrev={player.prevStation}
@@ -294,17 +360,18 @@ export default function App() {
                   {/* Spotify-style Active Station Hero */}
                   {activeTab === 'home' && !searchQuery && (
                     <HeroBanner
-                      station={player.currentStation}
+                      station={currentStation}
                       currentTrack={player.currentTrack}
                       isPlaying={player.isPlaying}
                       isBuffering={player.isBuffering}
                       isFavorite={player.session.favorites.includes(
-                        player.currentStation.id
+                        currentStation.id
                       )}
                       isFirstVisit={player.isFirstVisit}
+                      lang={lang}
                       onTogglePlay={player.togglePlay}
                       onToggleFavorite={() =>
-                        player.toggleFavorite(player.currentStation.id)
+                        player.toggleFavorite(currentStation.id)
                       }
                       onRandomStation={player.tuneRandomStation}
                     />
@@ -315,14 +382,16 @@ export default function App() {
                     <div className="flex items-center justify-between gap-2">
                       <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-white">
                         {activeTab === 'favorites'
-                          ? 'Tus emisoras favoritas'
+                          ? t.grid.favoritesTitle
                           : searchQuery
-                            ? `Resultados para "${searchQuery}"`
-                            : 'Emisoras de Leonida'}
+                            ? t.grid.resultsFor(searchQuery)
+                            : t.grid.stationsHeading}
                       </h2>
                       <span className="text-xs font-medium text-zinc-400">
                         {filteredStations.length}{' '}
-                        {filteredStations.length === 1 ? 'emisora' : 'emisoras'}
+                        {filteredStations.length === 1
+                          ? t.grid.stationSingular
+                          : t.grid.stationPlural}
                       </span>
                     </div>
 
@@ -339,7 +408,7 @@ export default function App() {
                                 : 'bg-white/[0.07] text-zinc-300 hover:bg-white/[0.13] hover:text-white'
                             }`}
                           >
-                            {genre}
+                            {GENRE_LABELS[lang][genre]}
                           </button>
                         );
                       })}
@@ -352,13 +421,13 @@ export default function App() {
                       <Heart className="h-10 w-10 text-zinc-600 mb-3" />
                       <p className="text-base font-bold text-zinc-200">
                         {activeTab === 'favorites'
-                          ? 'Todavía no tienes emisoras favoritas'
-                          : 'No se encontraron emisoras con ese filtro'}
+                          ? t.grid.noFavoritesTitle
+                          : t.grid.noResultsTitle}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
                         {activeTab === 'favorites'
-                          ? 'Pulsa el corazón en cualquier radio para guardarla aquí.'
-                          : 'Prueba con otro género o limpia la búsqueda.'}
+                          ? t.grid.noFavoritesHint
+                          : t.grid.noResultsHint}
                       </p>
                     </div>
                   ) : (
@@ -367,11 +436,12 @@ export default function App() {
                         <StationCard
                           key={station.id}
                           station={station}
-                          isActive={station.id === player.currentStation.id}
+                          isActive={station.id === currentStation.id}
                           isPlaying={
-                            station.id === player.currentStation.id && player.isPlaying
+                            station.id === currentStation.id && player.isPlaying
                           }
                           isFavorite={player.session.favorites.includes(station.id)}
+                          lang={lang}
                           onSelect={() => handleCardSelect(station.id)}
                           onToggleFavorite={() => player.toggleFavorite(station.id)}
                         />
@@ -387,19 +457,20 @@ export default function App() {
 
       {/* Persistent Spotify-style Bottom Player */}
       <PlayerBar
-        station={player.currentStation}
+        station={currentStation}
         currentTrack={player.currentTrack}
         isPlaying={player.isPlaying}
         isBuffering={player.isBuffering}
-        isFavorite={player.session.favorites.includes(player.currentStation.id)}
+        isFavorite={player.session.favorites.includes(currentStation.id)}
         volume={player.session.volume}
         isMuted={player.isMuted}
         fmStaticEnabled={player.session.fmStaticEnabled}
+        lang={lang}
         onTogglePlay={player.togglePlay}
         onPrev={player.prevStation}
         onNext={player.nextStation}
         onRandom={player.tuneRandomStation}
-        onToggleFavorite={() => player.toggleFavorite(player.currentStation.id)}
+        onToggleFavorite={() => player.toggleFavorite(currentStation.id)}
         onChangeVolume={player.setVolume}
         onToggleMute={player.toggleMute}
         onToggleFmStatic={player.toggleFmStatic}
@@ -409,6 +480,7 @@ export default function App() {
       <MobileNav
         activeTab={activeTab}
         favoritesCount={player.session.favorites.length}
+        lang={lang}
         onChangeTab={handleTabChange}
       />
     </div>

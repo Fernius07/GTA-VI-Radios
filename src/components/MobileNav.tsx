@@ -1,27 +1,32 @@
 import { Disc3, Heart, Home } from 'lucide-react';
+import { UI_TEXT, type Language } from '../lib/i18n';
 import type { SidebarTab } from './Sidebar';
 
 interface MobileNavProps {
   activeTab: SidebarTab;
   favoritesCount: number;
+  lang: Language;
   onChangeTab: (tab: SidebarTab) => void;
 }
 
 export function MobileNav({
   activeTab,
   favoritesCount,
+  lang,
   onChangeTab,
 }: MobileNavProps) {
+  const t = UI_TEXT[lang].nav;
+
   const items: { id: SidebarTab; label: string; icon: typeof Home; badge?: number }[] = [
-    { id: 'home', label: 'Inicio', icon: Home },
-    { id: 'dial', label: 'Dial GTA', icon: Disc3 },
-    { id: 'favorites', label: 'Favoritas', icon: Heart, badge: favoritesCount },
+    { id: 'home', label: t.home, icon: Home },
+    { id: 'dial', label: t.dialShort, icon: Disc3 },
+    { id: 'favorites', label: t.favoritesShort, icon: Heart, badge: favoritesCount },
   ];
 
   return (
     <nav
       className="z-30 shrink-0 border-t border-white/[0.08] bg-[#09090b]/95 px-4 pt-1.5 pb-[max(0.45rem,env(safe-area-inset-bottom))] backdrop-blur-xl md:hidden"
-      aria-label="Navegación móvil"
+      aria-label={t.mobileNavLabel}
     >
       <div className="mx-auto grid max-w-md grid-cols-3">
         {items.map((item) => {

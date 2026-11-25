@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { RadioStation } from '../data/stations';
 import type { CurrentTrackInfo } from '../lib/radioEngine';
+import { UI_TEXT, type Language } from '../lib/i18n';
 import { StationArtwork } from './StationArtwork';
 import { MarqueeText } from './MarqueeText';
 
@@ -25,6 +26,7 @@ interface PlayerBarProps {
   volume: number;
   isMuted: boolean;
   fmStaticEnabled: boolean;
+  lang: Language;
   onTogglePlay: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -44,6 +46,7 @@ export function PlayerBar({
   volume,
   isMuted,
   fmStaticEnabled,
+  lang,
   onTogglePlay,
   onPrev,
   onNext,
@@ -53,6 +56,8 @@ export function PlayerBar({
   onToggleMute,
   onToggleFmStatic,
 }: PlayerBarProps) {
+  const t = UI_TEXT[lang].player;
+  const th = UI_TEXT[lang].hero;
   const displayVol = isMuted ? 0 : volume;
   const VolumeIcon =
     displayVol === 0 ? VolumeX : displayVol < 0.5 ? Volume1 : Volume2;
@@ -67,7 +72,7 @@ export function PlayerBar({
         }}
       >
         <div className="flex items-center justify-between gap-2.5">
-          {/* Left: Cover + Title + Frequency */}
+          {/* Left: Cover + Title + Artist/Station */}
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <StationArtwork
               station={station}
@@ -89,12 +94,12 @@ export function PlayerBar({
                   }`}
                 />
                 <MarqueeText
-                  watchKey={`${station.id}-${currentTrack?.track.artist ?? ''}-${isPlaying}-m2`}
+                  watchKey={`${station.id}-${currentTrack?.track.artist ?? ''}-${isPlaying}-${lang}-m2`}
                   className="flex-1"
                 >
                   {currentTrack
                     ? `${currentTrack.track.artist ? `${currentTrack.track.artist} · ` : ''}${station.name}`
-                    : `${isPlaying ? 'En directo' : 'En pausa'} · ${station.frequency}`}
+                    : `${isPlaying ? t.live : t.paused} · ${station.frequency}`}
                 </MarqueeText>
               </div>
             </div>
@@ -105,7 +110,7 @@ export function PlayerBar({
             <button
               onClick={onPrev}
               className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 active:bg-white/10 active:text-white touch-manipulation"
-              aria-label="Emisora anterior"
+              aria-label={t.prevAria}
             >
               <SkipBack className="h-4 w-4 fill-current" />
             </button>
@@ -113,7 +118,7 @@ export function PlayerBar({
             <button
               onClick={onNext}
               className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-300 active:bg-white/10 active:text-white touch-manipulation"
-              aria-label="Siguiente emisora"
+              aria-label={t.nextAria}
             >
               <SkipForward className="h-4 w-4 fill-current" />
             </button>
@@ -121,7 +126,7 @@ export function PlayerBar({
             <button
               onClick={onTogglePlay}
               className="ml-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-md transition active:scale-95 touch-manipulation"
-              aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+              aria-label={isPlaying ? t.pauseAria : t.playAria}
             >
               {isBuffering ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -172,11 +177,11 @@ export function PlayerBar({
                       isPlaying ? 'bg-[#1ed760] animate-pulse' : 'bg-rose-500'
                     }`}
                   />
-                  LIVE
+                  {t.liveBadge}
                 </span>
               </div>
               <MarqueeText
-                watchKey={`${station.id}-${currentTrack?.track.artist ?? ''}-d2`}
+                watchKey={`${station.id}-${currentTrack?.track.artist ?? ''}-${lang}-d2`}
                 className="text-xs text-zinc-400"
               >
                 {currentTrack
@@ -189,7 +194,7 @@ export function PlayerBar({
               className={`rounded-full p-2 transition ${
                 isFavorite ? 'text-[#1ed760]' : 'text-zinc-400 hover:text-white'
               }`}
-              aria-label={isFavorite ? 'Quitar de favoritas' : 'Guardar en favoritas'}
+              aria-label={isFavorite ? th.removeFavorite : th.addFavorite}
             >
               <Heart className={`h-4 w-4 ${isFavorite ? 'fill-[#1ed760]' : ''}`} />
             </button>
@@ -201,8 +206,8 @@ export function PlayerBar({
               <button
                 onClick={onRandom}
                 className="text-zinc-400 transition hover:text-white"
-                title="Emisora aleatoria (R)"
-                aria-label="Emisora aleatoria"
+                title={t.randomTitle}
+                aria-label={t.randomAria}
               >
                 <Shuffle className="h-4 w-4" />
               </button>
@@ -210,8 +215,8 @@ export function PlayerBar({
               <button
                 onClick={onPrev}
                 className="text-zinc-300 transition hover:text-white"
-                title="Emisora anterior (←)"
-                aria-label="Emisora anterior"
+                title={t.prevTitle}
+                aria-label={t.prevAria}
               >
                 <SkipBack className="h-5 w-5 fill-current" />
               </button>
@@ -219,8 +224,8 @@ export function PlayerBar({
               <button
                 onClick={onTogglePlay}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black shadow-lg transition hover:scale-105 active:scale-95"
-                title="Reproducir / Pausar (Espacio)"
-                aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+                title={t.playPauseTitle}
+                aria-label={isPlaying ? t.pauseAria : t.playAria}
               >
                 {isBuffering ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -234,8 +239,8 @@ export function PlayerBar({
               <button
                 onClick={onNext}
                 className="text-zinc-300 transition hover:text-white"
-                title="Siguiente emisora (→)"
-                aria-label="Siguiente emisora"
+                title={t.nextTitle}
+                aria-label={t.nextAria}
               >
                 <SkipForward className="h-5 w-5 fill-current" />
               </button>
@@ -247,7 +252,7 @@ export function PlayerBar({
                     ? 'bg-[#1ed760]/15 text-[#1ed760]'
                     : 'text-zinc-500 hover:text-zinc-300'
                 }`}
-                title="Efecto estática FM al cambiar de emisora"
+                title={t.fmStaticTitle}
               >
                 <Radio className="h-3.5 w-3.5" />
                 <span>FM</span>
@@ -261,7 +266,7 @@ export function PlayerBar({
                     isPlaying ? 'bg-[#1ed760] animate-pulse' : 'bg-zinc-500'
                   }`}
                 />
-                {isPlaying ? 'En directo' : 'En pausa'}
+                {isPlaying ? t.live : t.paused}
               </span>
               <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/10">
                 <div
@@ -284,8 +289,8 @@ export function PlayerBar({
               <button
                 onClick={onToggleMute}
                 className="text-zinc-400 transition hover:text-white"
-                title="Silenciar (M)"
-                aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
+                title={t.muteTitle}
+                aria-label={isMuted ? t.unmuteAria : t.muteAria}
               >
                 <VolumeIcon className="h-4 w-4" />
               </button>
@@ -300,7 +305,7 @@ export function PlayerBar({
                 style={{
                   background: `linear-gradient(to right, #1ed760 0%, #1ed760 ${displayVol * 100}%, rgba(255,255,255,0.18) ${displayVol * 100}%, rgba(255,255,255,0.18) 100%)`,
                 }}
-                aria-label="Volumen"
+                aria-label={t.volumeAria}
               />
             </div>
           </div>

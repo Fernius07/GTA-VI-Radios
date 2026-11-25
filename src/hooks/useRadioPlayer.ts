@@ -11,6 +11,7 @@ import {
 } from '../lib/radioEngine';
 import { getStationLockscreenArtwork } from '../lib/mediaArtwork';
 import { playFmTuningBurst } from '../lib/fmStatic';
+import { UI_TEXT, type Language } from '../lib/i18n';
 
 export interface RadioPlayerController {
   session: RadioSessionState;
@@ -38,7 +39,7 @@ export interface RadioPlayerController {
   showAwayBanner: boolean;
 }
 
-export function useRadioPlayer(): RadioPlayerController {
+export function useRadioPlayer(lang: Language = 'es'): RadioPlayerController {
   const initial = useMemo(() => loadOrInitSession(), []);
   const [session, setSession] = useState<RadioSessionState>(initial.state);
   const [isFirstVisit, setIsFirstVisit] = useState<boolean>(initial.isFirstVisit);
@@ -72,12 +73,14 @@ export function useRadioPlayer(): RadioPlayerController {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const sessionRef = useRef<RadioSessionState>(session);
   const currentStationRef = useRef<RadioStation>(currentStation);
+  const langRef = useRef<Language>(lang);
   const wantPlayRef = useRef<boolean>(false);
   const needsInitialSeekRef = useRef<boolean>(true);
   const loadedStationIdRef = useRef<string | null>(null);
 
   sessionRef.current = session;
   currentStationRef.current = currentStation;
+  langRef.current = lang;
 
   // Persist session changes to localStorage
   useEffect(() => {
@@ -176,9 +179,7 @@ export function useRadioPlayer(): RadioPlayerController {
       setIsBuffering(false);
       setIsPlaying(false);
       wantPlayRef.current = false;
-      setAudioError(
-        'No se pudo cargar el audio de esta emisora. En local asegúrate de tener los MP3 en local-audio/ y en Vercel configura VITE_AUDIO_BASE_URL.'
-      );
+      setAudioError(UI_TEXT[langRef.current].audioError);
     };
 
     audio.addEventListener('loadedmetadata', onLoadedMetadata);
@@ -486,7 +487,7 @@ export function useRadioPlayer(): RadioPlayerController {
         ? currentTrackArtist
           ? `${currentTrackArtist} — ${currentStation.name}`
           : currentStation.name
-        : `${currentStation.frequency} · En directo`;
+        : `${currentStation.frequency} · ${UI_TEXT[lang].hero.live}`;
 
       navigator.mediaSession.metadata = new MediaMetadata({
         title,
@@ -544,6 +545,7 @@ export function useRadioPlayer(): RadioPlayerController {
     currentTrackArtist,
     currentTrackDuration,
     isPlaying,
+    lang,
     lockscreenArtwork,
     togglePlay,
     prevStation,
