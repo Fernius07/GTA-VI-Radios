@@ -131,6 +131,11 @@ export function DialView({
         <p className="mt-1 text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-300">
           {currentStation.styles.join(' · ')}
         </p>
+        {currentStation.hosts && (
+          <p className="mt-1 text-xs font-medium text-zinc-400">
+            Con {currentStation.hosts}
+          </p>
+        )}
         <p className="mt-2 sm:mt-3 line-clamp-3 sm:line-clamp-none text-xs sm:text-sm leading-relaxed text-zinc-400">
           {currentStation.description}
         </p>

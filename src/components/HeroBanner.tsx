@@ -98,6 +98,11 @@ export function HeroBanner({
             <p className="mt-0.5 line-clamp-1 text-xs font-medium text-zinc-200">
               {station.tagline}
             </p>
+            {station.hosts && (
+              <p className="mt-0.5 line-clamp-1 text-[11px] font-medium text-zinc-400">
+                Con {station.hosts}
+              </p>
+            )}
           </div>
         </div>
 
@@ -193,6 +198,12 @@ export function HeroBanner({
           <p className="mt-1.5 text-base font-medium text-zinc-200">
             {station.tagline}
           </p>
+
+          {station.hosts && (
+            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Con {station.hosts}
+            </p>
+          )}
 
           <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-zinc-300/90">
             {station.description}

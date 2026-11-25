@@ -78,6 +78,7 @@ export default function App() {
         station.name.toLowerCase().includes(q) ||
         station.description.toLowerCase().includes(q) ||
         station.tagline.toLowerCase().includes(q) ||
+        (station.hosts?.toLowerCase().includes(q) ?? false) ||
         station.category.toLowerCase().includes(q) ||
         station.frequency.toLowerCase().includes(q) ||
         station.styles.some((s) => s.toLowerCase().includes(q))
