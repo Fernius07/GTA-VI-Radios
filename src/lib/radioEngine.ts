@@ -1,4 +1,5 @@
 import { STATIONS, type RadioStation } from '../data/stations';
+import { STATION_TRACKLISTS, type RadioTrack } from '../data/tracklists';
 
 const STORAGE_KEY = 'gta6_radio_live_session_v1';
 
@@ -143,6 +144,52 @@ export function getLivePositionSeconds(
   const elapsedSeconds = Math.max(0, (nowMs - state.anchorTimestamp) / 1000);
   const rawPos = (baseOffset + elapsedSeconds) % duration;
   return rawPos < 0 ? 0 : rawPos;
+}
+
+export interface CurrentTrackInfo {
+  track: RadioTrack;
+  nextTrack?: RadioTrack;
+  trackElapsed: number;
+  trackDuration: number;
+  index: number;
+  total: number;
+}
+
+/**
+ * Returns the track currently playing at `positionSeconds` for a music station,
+ * or null if the station has no tracklist (e.g., talk radio).
+ */
+export function getCurrentTrack(
+  stationId: string,
+  positionSeconds: number,
+  stationDurationSeconds: number
+): CurrentTrackInfo | null {
+  const tracks = STATION_TRACKLISTS[stationId];
+  if (!tracks || tracks.length === 0) return null;
+
+  let index = 0;
+  for (let i = 0; i < tracks.length; i++) {
+    if (tracks[i].start <= positionSeconds) {
+      index = i;
+    } else {
+      break;
+    }
+  }
+
+  const track = tracks[index];
+  const nextTrack = tracks[index + 1];
+  const nextStart = nextTrack ? nextTrack.start : Math.max(track.start + 1, stationDurationSeconds);
+  const trackDuration = Math.max(1, nextStart - track.start);
+  const trackElapsed = Math.min(trackDuration, Math.max(0, positionSeconds - track.start));
+
+  return {
+    track,
+    nextTrack,
+    trackElapsed,
+    trackDuration,
+    index,
+    total: tracks.length,
+  };
 }
 
 export function formatBroadcastTime(totalSeconds: number): string {

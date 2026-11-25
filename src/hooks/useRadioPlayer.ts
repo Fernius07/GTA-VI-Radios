@@ -2,16 +2,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getAudioUrl, STATIONS, type RadioStation } from '../data/stations';
 import {
   createFreshSession,
+  getCurrentTrack,
   getLivePositionSeconds,
   loadOrInitSession,
   saveSession,
+  type CurrentTrackInfo,
   type RadioSessionState,
 } from '../lib/radioEngine';
+import { getStationLockscreenArtwork } from '../lib/mediaArtwork';
 import { playFmTuningBurst } from '../lib/fmStatic';
 
 export interface RadioPlayerController {
   session: RadioSessionState;
   currentStation: RadioStation;
+  currentTrack: CurrentTrackInfo | null;
   isFirstVisit: boolean;
   awaySeconds: number;
   isPlaying: boolean;
@@ -58,6 +62,13 @@ export function useRadioPlayer(): RadioPlayerController {
     getLivePositionSeconds(currentStation, initial.state)
   );
 
+  const effectiveDuration = actualDuration ?? currentStation.durationSeconds;
+
+  const currentTrack = useMemo(
+    () => getCurrentTrack(currentStation.id, livePosition, effectiveDuration),
+    [currentStation.id, livePosition, effectiveDuration]
+  );
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const sessionRef = useRef<RadioSessionState>(session);
   const currentStationRef = useRef<RadioStation>(currentStation);
@@ -92,6 +103,8 @@ export function useRadioPlayer(): RadioPlayerController {
     audio.preload = 'metadata';
     audio.loop = true;
     audio.volume = sessionRef.current.volume;
+    audio.setAttribute('playsinline', 'true');
+    audio.setAttribute('x-webkit-airplay', 'allow');
     audioRef.current = audio;
 
     const applyLiveSeekAndPlay = () => {
@@ -430,46 +443,124 @@ export function useRadioPlayer(): RadioPlayerController {
     setShowAwayBanner(false);
   }, []);
 
-  // Sync lock-screen / car-stereo MediaSession controls on mobile devices
+  const currentTrackTitle = currentTrack?.track.title ?? '';
+  const currentTrackArtist = currentTrack?.track.artist ?? '';
+  const currentTrackDuration = currentTrack?.trackDuration ?? 0;
+  const currentTrackElapsed = currentTrack?.trackElapsed ?? 0;
+
+  // Keep browser tab title reflecting what is currently playing
+  useEffect(() => {
+    if (!isPlaying) {
+      document.title = 'GTA VI Radio — The Sound of Leonida';
+      return;
+    }
+    if (currentTrackTitle) {
+      document.title = `${currentTrackTitle} · ${currentStation.name} — GTA VI Radio`;
+    } else {
+      document.title = `${currentStation.name} — GTA VI Radio`;
+    }
+  }, [isPlaying, currentStation.name, currentTrackTitle]);
+
+  // Pre-generate opaque 512x512 PNG artwork for iOS Lock Screen, Apple CarPlay & Bluetooth
+  const [lockscreenArtwork, setLockscreenArtwork] = useState<string>('');
+  useEffect(() => {
+    let cancelled = false;
+    void getStationLockscreenArtwork(currentStation).then((pngUrl) => {
+      if (!cancelled) setLockscreenArtwork(pngUrl);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStation]);
+
+  // Sync iPhone Lock Screen, Apple CarPlay & Bluetooth AVRCP MediaSession controls & metadata
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
     try {
-      const origin = window.location.origin;
+      const fallbackUrl = `${window.location.origin}${currentStation.cover}`;
+      const artworkSrc = lockscreenArtwork || fallbackUrl;
+      const artworkType = artworkSrc.startsWith('data:image/png') ? 'image/png' : 'image/webp';
+
+      const title = currentTrackTitle || currentStation.name;
+      const artist = currentTrackTitle
+        ? currentTrackArtist
+          ? `${currentTrackArtist} — ${currentStation.name}`
+          : currentStation.name
+        : `${currentStation.frequency} · En directo`;
+
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: currentStation.name,
-        artist: `${currentStation.frequency} · ${currentStation.styles.slice(0, 2).join(' · ')}`,
-        album: 'GTA VI Radio — Leonida',
+        title,
+        artist,
+        album: `${currentStation.name} · ${currentStation.frequency}`,
         artwork: [
           {
-            src: `${origin}${currentStation.cover}`,
+            src: artworkSrc,
             sizes: '512x512',
+            type: artworkType,
           },
         ],
       });
+
       navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+
+      // Show LIVE badge instead of the 5-hour MP3 duration on iOS Lock Screen & CarPlay
+      try {
+        navigator.mediaSession.setPositionState({ duration: Infinity });
+      } catch {
+        if (currentTrackDuration > 0) {
+          try {
+            navigator.mediaSession.setPositionState({
+              duration: currentTrackDuration,
+              playbackRate: isPlaying ? 1 : 0,
+              position: Math.min(currentTrackDuration, currentTrackElapsed),
+            });
+          } catch {
+            // Ignore unsupported browsers
+          }
+        }
+      }
+
       navigator.mediaSession.setActionHandler('play', () => {
         if (!isPlaying) togglePlay();
       });
       navigator.mediaSession.setActionHandler('pause', () => {
         if (isPlaying) togglePlay();
       });
+      navigator.mediaSession.setActionHandler('stop', () => {
+        if (isPlaying) togglePlay();
+      });
       navigator.mediaSession.setActionHandler('previoustrack', () => prevStation());
       navigator.mediaSession.setActionHandler('nexttrack', () => nextStation());
+      // Clear seek handlers so CarPlay / steering wheel buttons switch stations instead of scrubbing
+      navigator.mediaSession.setActionHandler('seekto', null);
+      navigator.mediaSession.setActionHandler('seekbackward', null);
+      navigator.mediaSession.setActionHandler('seekforward', null);
     } catch {
       // Ignore unsupported MediaSession environments
     }
-  }, [currentStation, isPlaying, togglePlay, prevStation, nextStation]);
+  }, [
+    currentStation,
+    currentTrackTitle,
+    currentTrackArtist,
+    currentTrackDuration,
+    isPlaying,
+    lockscreenArtwork,
+    togglePlay,
+    prevStation,
+    nextStation,
+  ]);
 
   return {
     session,
     currentStation,
+    currentTrack,
     isFirstVisit,
     awaySeconds,
     isPlaying,
     isBuffering,
     audioError,
     livePosition,
-    effectiveDuration: actualDuration ?? currentStation.durationSeconds,
+    effectiveDuration,
     isMuted,
     selectStation,
     togglePlay,

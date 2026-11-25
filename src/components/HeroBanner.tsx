@@ -2,6 +2,7 @@ import {
   Clock,
   Heart,
   Loader2,
+  Music2,
   Pause,
   Play,
   Radio,
@@ -10,11 +11,12 @@ import {
   X,
 } from 'lucide-react';
 import type { RadioStation } from '../data/stations';
-import { formatElapsedAway } from '../lib/radioEngine';
+import { formatElapsedAway, type CurrentTrackInfo } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
 
 interface HeroBannerProps {
   station: RadioStation;
+  currentTrack: CurrentTrackInfo | null;
   isPlaying: boolean;
   isBuffering: boolean;
   isFavorite: boolean;
@@ -29,6 +31,7 @@ interface HeroBannerProps {
 
 export function HeroBanner({
   station,
+  currentTrack,
   isPlaying,
   isBuffering,
   isFavorite,
@@ -109,6 +112,27 @@ export function HeroBanner({
         <p className="line-clamp-2 text-xs leading-relaxed text-zinc-300/90">
           {station.description}
         </p>
+
+        {currentTrack && (
+          <div className="flex items-center gap-2.5 rounded-xl bg-black/35 px-3 py-2 ring-1 ring-white/10 backdrop-blur-md">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#1ed760]/15 text-[#1ed760]">
+              <Music2 className="h-3.5 w-3.5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                Sonando ahora
+              </p>
+              <p className="truncate text-xs font-bold text-white">
+                {currentTrack.track.title}
+                {currentTrack.track.artist ? (
+                  <span className="font-normal text-zinc-300">
+                    {' '}· {currentTrack.track.artist}
+                  </span>
+                ) : null}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-1.5">
           {station.styles.slice(0, 3).map((style) => (
@@ -208,6 +232,27 @@ export function HeroBanner({
           <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-zinc-300/90">
             {station.description}
           </p>
+
+          {currentTrack && (
+            <div className="mt-3.5 inline-flex max-w-xl items-center gap-3 self-start rounded-xl bg-black/35 px-3.5 py-2 ring-1 ring-white/10 backdrop-blur-md">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1ed760]/15 text-[#1ed760]">
+                <Music2 className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  Sonando ahora
+                </p>
+                <p className="truncate text-sm font-bold text-white">
+                  {currentTrack.track.title}
+                  {currentTrack.track.artist ? (
+                    <span className="font-medium text-zinc-300">
+                      {' '}— {currentTrack.track.artist}
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Style pills */}
           <div className="mt-4 flex flex-wrap items-center justify-start gap-2">

@@ -12,10 +12,12 @@ import {
   VolumeX,
 } from 'lucide-react';
 import type { RadioStation } from '../data/stations';
+import type { CurrentTrackInfo } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
 
 interface PlayerBarProps {
   station: RadioStation;
+  currentTrack: CurrentTrackInfo | null;
   isPlaying: boolean;
   isBuffering: boolean;
   isFavorite: boolean;
@@ -34,6 +36,7 @@ interface PlayerBarProps {
 
 export function PlayerBar({
   station,
+  currentTrack,
   isPlaying,
   isBuffering,
   isFavorite,
@@ -73,7 +76,7 @@ export function PlayerBar({
             />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-white leading-tight">
-                {station.name}
+                {currentTrack ? currentTrack.track.title : station.name}
               </p>
               <p className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-zinc-300">
                 <span
@@ -82,7 +85,9 @@ export function PlayerBar({
                   }`}
                 />
                 <span className="truncate">
-                  {isPlaying ? 'En directo' : 'En pausa'} · {station.frequency}
+                  {currentTrack
+                    ? `${currentTrack.track.artist ? `${currentTrack.track.artist} · ` : ''}${station.name}`
+                    : `${isPlaying ? 'En directo' : 'En pausa'} · ${station.frequency}`}
                 </span>
               </p>
             </div>
@@ -149,7 +154,7 @@ export function PlayerBar({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="truncate text-sm font-bold text-white">
-                  {station.name}
+                  {currentTrack ? currentTrack.track.title : station.name}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-bold text-zinc-300">
                   <span
@@ -161,7 +166,9 @@ export function PlayerBar({
                 </span>
               </div>
               <p className="truncate text-xs text-zinc-400">
-                {station.frequency} · {station.styles.slice(0, 2).join(' · ')}
+                {currentTrack
+                  ? `${currentTrack.track.artist ? `${currentTrack.track.artist} · ` : ''}${station.name} · ${station.frequency}`
+                  : `${station.frequency} · ${station.styles.slice(0, 2).join(' · ')}`}
               </p>
             </div>
             <button

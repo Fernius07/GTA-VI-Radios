@@ -1,9 +1,11 @@
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Music2, Pause, Play } from 'lucide-react';
 import { STATIONS, type RadioStation } from '../data/stations';
+import type { CurrentTrackInfo } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
 
 interface DialViewProps {
   currentStation: RadioStation;
+  currentTrack: CurrentTrackInfo | null;
   isPlaying: boolean;
   onSelectStation: (stationId: string) => void;
   onTogglePlay: () => void;
@@ -13,6 +15,7 @@ interface DialViewProps {
 
 export function DialView({
   currentStation,
+  currentTrack,
   isPlaying,
   onSelectStation,
   onTogglePlay,
@@ -139,6 +142,18 @@ export function DialView({
         <p className="mt-2 sm:mt-3 line-clamp-3 sm:line-clamp-none text-xs sm:text-sm leading-relaxed text-zinc-400">
           {currentStation.description}
         </p>
+
+        {currentTrack && (
+          <div className="mt-3.5 flex justify-center">
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full bg-black/45 px-3.5 py-1.5 text-xs font-semibold text-white ring-1 ring-white/10">
+              <Music2 className="h-3.5 w-3.5 shrink-0 text-[#1ed760]" />
+              <span className="truncate">
+                {currentTrack.track.title}
+                {currentTrack.track.artist ? ` — ${currentTrack.track.artist}` : ''}
+              </span>
+            </div>
+          </div>
+        )}
 
         <button
           onClick={onTogglePlay}

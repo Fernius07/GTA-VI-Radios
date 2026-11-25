@@ -282,6 +282,7 @@ export default function App() {
               {activeTab === 'dial' ? (
                 <DialView
                   currentStation={player.currentStation}
+                  currentTrack={player.currentTrack}
                   isPlaying={player.isPlaying}
                   onSelectStation={(id) => player.selectStation(id, true)}
                   onTogglePlay={player.togglePlay}
@@ -294,6 +295,7 @@ export default function App() {
                   {activeTab === 'home' && !searchQuery && (
                     <HeroBanner
                       station={player.currentStation}
+                      currentTrack={player.currentTrack}
                       isPlaying={player.isPlaying}
                       isBuffering={player.isBuffering}
                       isFavorite={player.session.favorites.includes(
@@ -389,6 +391,7 @@ export default function App() {
       {/* Persistent Spotify-style Bottom Player */}
       <PlayerBar
         station={player.currentStation}
+        currentTrack={player.currentTrack}
         isPlaying={player.isPlaying}
         isBuffering={player.isBuffering}
         isFavorite={player.session.favorites.includes(player.currentStation.id)}
