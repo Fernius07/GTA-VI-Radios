@@ -1,0 +1,20 @@
+# Dependencies & build
+node_modules/
+dist/
+.vite/
+
+# Local environment
+.env
+.env.local
+.env.*.local
+
+# Raw audio files (~7.3 GB total, exceeds GitHub 100 MB/file limit).
+# Host these in Cloudflare R2 / S3 / Backblaze B2 and set VITE_AUDIO_BASE_URL in Vercel.
+local-audio/
+public/audio/
+durations.json
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.log
