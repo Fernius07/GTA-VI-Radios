@@ -1,5 +1,4 @@
 import {
-  Clock,
   Heart,
   Loader2,
   Music2,
@@ -8,10 +7,9 @@ import {
   Radio,
   Shuffle,
   Sparkles,
-  X,
 } from 'lucide-react';
 import type { RadioStation } from '../data/stations';
-import { formatElapsedAway, type CurrentTrackInfo } from '../lib/radioEngine';
+import type { CurrentTrackInfo } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
 
 interface HeroBannerProps {
@@ -20,13 +18,10 @@ interface HeroBannerProps {
   isPlaying: boolean;
   isBuffering: boolean;
   isFavorite: boolean;
-  showAwayBanner: boolean;
-  awaySeconds: number;
   isFirstVisit: boolean;
   onTogglePlay: () => void;
   onToggleFavorite: () => void;
   onRandomStation: () => void;
-  onDismissAwayBanner: () => void;
 }
 
 export function HeroBanner({
@@ -35,13 +30,10 @@ export function HeroBanner({
   isPlaying,
   isBuffering,
   isFavorite,
-  showAwayBanner,
-  awaySeconds,
   isFirstVisit,
   onTogglePlay,
   onToggleFavorite,
   onRandomStation,
-  onDismissAwayBanner,
 }: HeroBannerProps) {
   return (
     <section
@@ -55,26 +47,6 @@ export function HeroBanner({
         className="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full opacity-25 blur-3xl transition-colors duration-700"
         style={{ backgroundColor: station.accentColor }}
       />
-
-      {/* Returning listener live-continuity notification */}
-      {showAwayBanner && awaySeconds >= 5 && (
-        <div className="relative z-10 mb-3.5 md:mb-5 flex items-center justify-between gap-2.5 rounded-xl bg-black/35 px-3 py-2 md:px-4 md:py-2.5 text-xs sm:text-sm text-zinc-200 ring-1 ring-white/10 backdrop-blur-md">
-          <div className="flex items-center gap-2 min-w-0">
-            <Clock className="h-4 w-4 shrink-0 text-[#1ed760]" />
-            <span className="leading-snug">
-              De vuelta en Leonida (<strong className="text-white">{formatElapsedAway(awaySeconds)}</strong> fuera):
-              las emisoras siguieron en directo.
-            </span>
-          </div>
-          <button
-            onClick={onDismissAwayBanner}
-            className="shrink-0 rounded-md p-1 text-zinc-400 hover:bg-white/10 hover:text-white"
-            aria-label="Cerrar aviso"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
 
       {/* Compact Spotify-Mobile "Now Tuned" Card (< md) */}
       <div className="relative z-10 flex flex-col gap-3.5 md:hidden">

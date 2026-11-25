@@ -301,15 +301,12 @@ export default function App() {
                       isFavorite={player.session.favorites.includes(
                         player.currentStation.id
                       )}
-                      showAwayBanner={player.showAwayBanner}
-                      awaySeconds={player.awaySeconds}
                       isFirstVisit={player.isFirstVisit}
                       onTogglePlay={player.togglePlay}
                       onToggleFavorite={() =>
                         player.toggleFavorite(player.currentStation.id)
                       }
                       onRandomStation={player.tuneRandomStation}
-                      onDismissAwayBanner={player.dismissAwayBanner}
                     />
                   )}
 
