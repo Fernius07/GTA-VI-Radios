@@ -14,6 +14,7 @@ import {
 import type { RadioStation } from '../data/stations';
 import type { CurrentTrackInfo } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
+import { MarqueeText } from './MarqueeText';
 
 interface PlayerBarProps {
   station: RadioStation;
@@ -75,21 +76,27 @@ export function PlayerBar({
               className="shrink-0"
             />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-white leading-tight">
+              <MarqueeText
+                watchKey={`${station.id}-${currentTrack?.track.title ?? ''}-m1`}
+                className="text-sm font-bold text-white leading-tight"
+              >
                 {currentTrack ? currentTrack.track.title : station.name}
-              </p>
-              <p className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-zinc-300">
+              </MarqueeText>
+              <div className="mt-0.5 flex items-center gap-1.5 min-w-0 text-[11px] text-zinc-300">
                 <span
                   className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                     isPlaying ? 'bg-[#1ed760] animate-pulse' : 'bg-zinc-500'
                   }`}
                 />
-                <span className="truncate">
+                <MarqueeText
+                  watchKey={`${station.id}-${currentTrack?.track.artist ?? ''}-${isPlaying}-m2`}
+                  className="flex-1"
+                >
                   {currentTrack
                     ? `${currentTrack.track.artist ? `${currentTrack.track.artist} · ` : ''}${station.name}`
                     : `${isPlaying ? 'En directo' : 'En pausa'} · ${station.frequency}`}
-                </span>
-              </p>
+                </MarqueeText>
+              </div>
             </div>
           </div>
 
@@ -152,11 +159,14 @@ export function PlayerBar({
               className="shrink-0"
             />
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="truncate text-sm font-bold text-white">
+              <div className="flex items-center gap-2 min-w-0">
+                <MarqueeText
+                  watchKey={`${station.id}-${currentTrack?.track.title ?? ''}-d1`}
+                  className="text-sm font-bold text-white"
+                >
                   {currentTrack ? currentTrack.track.title : station.name}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-bold text-zinc-300">
+                </MarqueeText>
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-bold text-zinc-300">
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
                       isPlaying ? 'bg-[#1ed760] animate-pulse' : 'bg-rose-500'
@@ -165,11 +175,14 @@ export function PlayerBar({
                   LIVE
                 </span>
               </div>
-              <p className="truncate text-xs text-zinc-400">
+              <MarqueeText
+                watchKey={`${station.id}-${currentTrack?.track.artist ?? ''}-d2`}
+                className="text-xs text-zinc-400"
+              >
                 {currentTrack
                   ? `${currentTrack.track.artist ? `${currentTrack.track.artist} · ` : ''}${station.name} · ${station.frequency}`
                   : `${station.frequency} · ${station.styles.slice(0, 2).join(' · ')}`}
-              </p>
+              </MarqueeText>
             </div>
             <button
               onClick={onToggleFavorite}

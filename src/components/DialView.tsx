@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, Music2, Pause, Play } from 'lucide-react';
 import { STATIONS, type RadioStation } from '../data/stations';
 import type { CurrentTrackInfo } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
+import { MarqueeText } from './MarqueeText';
 
 interface DialViewProps {
   currentStation: RadioStation;
@@ -145,12 +146,16 @@ export function DialView({
 
         {currentTrack && (
           <div className="mt-3.5 flex justify-center">
-            <div className="inline-flex max-w-full items-center gap-2 rounded-full bg-black/45 px-3.5 py-1.5 text-xs font-semibold text-white ring-1 ring-white/10">
+            <div className="inline-flex max-w-full items-center gap-2 overflow-hidden rounded-full bg-black/45 px-3.5 py-1.5 text-xs font-semibold text-white ring-1 ring-white/10">
               <Music2 className="h-3.5 w-3.5 shrink-0 text-[#1ed760]" />
-              <span className="truncate">
-                {currentTrack.track.title}
-                {currentTrack.track.artist ? ` — ${currentTrack.track.artist}` : ''}
-              </span>
+              <div className="min-w-0 flex-1">
+                <MarqueeText
+                  watchKey={`${currentTrack.track.title}-${currentTrack.track.artist}`}
+                >
+                  {currentTrack.track.title}
+                  {currentTrack.track.artist ? ` — ${currentTrack.track.artist}` : ''}
+                </MarqueeText>
+              </div>
             </div>
           </div>
         )}

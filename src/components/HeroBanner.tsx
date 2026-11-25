@@ -11,6 +11,7 @@ import {
 import type { RadioStation } from '../data/stations';
 import type { CurrentTrackInfo } from '../lib/radioEngine';
 import { StationArtwork } from './StationArtwork';
+import { MarqueeText } from './MarqueeText';
 
 interface HeroBannerProps {
   station: RadioStation;
@@ -94,14 +95,17 @@ export function HeroBanner({
               <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                 Sonando ahora
               </p>
-              <p className="truncate text-xs font-bold text-white">
+              <MarqueeText
+                watchKey={`${currentTrack.track.title}-${currentTrack.track.artist}`}
+                className="text-xs font-bold text-white"
+              >
                 {currentTrack.track.title}
                 {currentTrack.track.artist ? (
                   <span className="font-normal text-zinc-300">
                     {' '}· {currentTrack.track.artist}
                   </span>
                 ) : null}
-              </p>
+              </MarqueeText>
             </div>
           </div>
         )}
@@ -206,22 +210,25 @@ export function HeroBanner({
           </p>
 
           {currentTrack && (
-            <div className="mt-3 inline-flex max-w-xl items-center gap-3 self-start rounded-xl bg-black/35 px-3.5 py-2 ring-1 ring-white/10 backdrop-blur-md">
+            <div className="mt-3 inline-flex max-w-full sm:max-w-xl items-center gap-3 self-start rounded-xl bg-black/35 px-3.5 py-2 ring-1 ring-white/10 backdrop-blur-md">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1ed760]/15 text-[#1ed760]">
                 <Music2 className="h-4 w-4" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                   Sonando ahora
                 </p>
-                <p className="truncate text-sm font-bold text-white">
+                <MarqueeText
+                  watchKey={`${currentTrack.track.title}-${currentTrack.track.artist}`}
+                  className="text-sm font-bold text-white"
+                >
                   {currentTrack.track.title}
                   {currentTrack.track.artist ? (
                     <span className="font-medium text-zinc-300">
                       {' '}— {currentTrack.track.artist}
                     </span>
                   ) : null}
-                </p>
+                </MarqueeText>
               </div>
             </div>
           )}

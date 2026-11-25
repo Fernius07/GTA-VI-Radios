@@ -104,3 +104,44 @@ input[type='range'].spotify-slider::-webkit-slider-thumb {
 input[type='range'].spotify-slider:hover::-webkit-slider-thumb {
   transform: scale(1.2);
 }
+
+/* Overflow-aware marquee slide animation (slides left and returns to start) */
+@keyframes marquee-slide {
+  0%, 16% {
+    transform: translateX(0);
+  }
+  50%, 66% {
+    transform: translateX(var(--marquee-distance, 0px));
+  }
+  90%, 100% {
+    transform: translateX(0);
+  }
+}
+
+.marquee-animate {
+  animation: marquee-slide var(--marquee-duration, 10s) ease-in-out infinite;
+  will-change: transform;
+}
+
+.marquee-fade {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 4%,
+    #000 94%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 4%,
+    #000 94%,
+    transparent 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-animate {
+    animation: none;
+  }
+}
