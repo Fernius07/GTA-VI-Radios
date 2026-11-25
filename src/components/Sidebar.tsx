@@ -1,4 +1,4 @@
-import { Disc3, Heart, Home, Radio, X } from 'lucide-react';
+import { Disc3, Heart, Home, X } from 'lucide-react';
 import { STATIONS, type RadioStation } from '../data/stations';
 import { StationArtwork } from './StationArtwork';
 
@@ -37,12 +37,15 @@ export function Sidebar({
       <div className="rounded-xl bg-[#121216] p-4 ring-1 ring-white/[0.06]">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff4d94] via-[#a855f7] to-[#fb923c] shadow-lg shadow-[#ff4d94]/20">
-              <Radio className="h-5 w-5 text-white" />
-            </div>
+            <img
+              src="/gta6-logo.webp"
+              alt="GTA VI"
+              className="h-11 w-auto object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(255,77,148,0.28)]"
+              draggable={false}
+            />
             <div>
-              <div className="font-display text-lg font-bold tracking-wider leading-none text-white">
-                GTA VI <span className="text-[#ff6ba8]">RADIO</span>
+              <div className="font-display text-lg font-bold tracking-wider leading-none text-[#ff6ba8]">
+                RADIO
               </div>
               <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
                 The Sound of Leonida

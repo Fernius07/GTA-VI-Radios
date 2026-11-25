@@ -5,7 +5,6 @@ import {
   Heart,
   LayoutGrid,
   Menu,
-  Radio,
   RotateCcw,
   Search,
   X,
@@ -121,13 +120,16 @@ export default function App() {
             <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#121216]/90 px-3 py-2.5 backdrop-blur-xl sm:px-6 md:py-3">
               {/* Compact Mobile Header (< md) */}
               <div className="flex items-center justify-between gap-2 md:hidden">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#ff4d94] via-[#a855f7] to-[#fb923c] shadow-md shadow-[#ff4d94]/20">
-                    <Radio className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="font-display text-base font-bold tracking-wider leading-none text-white">
-                    GTA VI <span className="text-[#ff6ba8]">RADIO</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <img
+                    src="/gta6-logo.webp"
+                    alt="GTA VI"
+                    className="h-8 w-auto object-contain shrink-0 drop-shadow-[0_2px_6px_rgba(255,77,148,0.25)]"
+                    draggable={false}
+                  />
+                  <span className="font-display text-base font-bold tracking-wider leading-none text-[#ff6ba8]">
+                    RADIO
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-1.5">
