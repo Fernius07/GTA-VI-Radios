@@ -22,6 +22,9 @@ npm run dev
 En local, la aplicación sirve automáticamente los archivos `.mp3` ubicados en `local-audio/<slug>.mp3` con soporte de `HTTP Range` para saltar al segundo exacto al instante (sin incluirlos en `dist/`).
 
 ---
+## Diagrama de Arquitectura del proyecto
+[![Architecture diagram of fernius07/gta-vi-radios](https://gitdiagram.com/fernius07/gta-vi-radios/diagram.png)](https://gitdiagram.com/fernius07/gta-vi-radios?utm_source=readme&utm_medium=picture)
+---
 
 ## Cómo subir a GitHub y desplegar en Vercel
 
