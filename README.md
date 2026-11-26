@@ -23,6 +23,7 @@ En local, la aplicación sirve automáticamente los archivos `.mp3` ubicados en 
 
 ---
 ## Diagrama de Arquitectura del proyecto
+[![Architecture diagram](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/fernius07/gta-vi-radios?utm_source=readme&utm_medium=badge)
 [![Architecture diagram of fernius07/gta-vi-radios](https://gitdiagram.com/fernius07/gta-vi-radios/diagram.png)](https://gitdiagram.com/fernius07/gta-vi-radios?utm_source=readme&utm_medium=picture)
 ---
 
